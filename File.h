@@ -5,14 +5,21 @@
 
 using namespace std;
 
-class File
-{
-    string name;
-    string extension;
+class File {
+private:
+    string name;       // e.g., "assignment"
+    string extension;  // e.g., "docx"
 
 public:
-    File(string name, string extension);
-    string getFullName();
+    // Constructor (Optimized with const references)
+    File(const string& fileName, const string& fileExtension);
+
+    // Getters (Required for your duplicate checking logic in Folder.cpp)
+    string getName() const;
+    string getExtension() const;
+    
+    // Returns the complete file name (e.g., "assignment.docx")
+    string getFullName() const;
 };
 
 #endif
