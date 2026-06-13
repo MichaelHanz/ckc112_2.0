@@ -3,33 +3,39 @@
 
 #include "Folder.h"
 #include "File.h"
+#include <string> // FIXED: Added missing string library
 
 using namespace std;
 
 class FileSystem
 {
-
+private:
     Folder *root;
     Folder *current;
 
 public:
+    
     FileSystem();
+    ~FileSystem(); 
+    
     void loadFile();
     void run();
 
-    // Student 3
+    // Student 3 (Navigation Tools)
     void enterFolder(string foldername);
     void showCurrentPath() const;
     void showCurrentFolder() const;
     void goBack();
 
-    // You guys punya
+    // Student 2 (Your Core Engine Functions)
     void createFolder(string foldername);
     void createFile(string filename, string type);
-    void displayFullTree() const;
-    void searchFile(string filename) const;
     void deleteFile(string filename);
     void deleteFolder(string foldername);
+
+    // Student 1 (Recursive Overview Tools)
+    void displayFullTree() const;
+    void searchFile(string filename) const;
 };
 
 #endif
