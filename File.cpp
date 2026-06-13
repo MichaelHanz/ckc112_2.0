@@ -1,25 +1,11 @@
-#ifndef FILE_H
-#define FILE_H
-
-#include <string>
+#include "File.h"
 
 using namespace std;
 
-class File {
-private:
-    string name;       // e.g., "assignment"
-    string extension;  // e.g., "docx"
+File::File(string name, string extension)
+    : name(name), extension(extension) {}
 
-public:
-    
-    File(const string& fileName, const string& fileExtension);
-
-    // Getters (Required for your duplicate checking logic in Folder.cpp)
-    string getName() const;
-    string getExtension() const;
-    
-    // Returns the complete file name (e.g., "assignment.docx")
-    string getFullName() const;
-};
-
-#endif
+string File::getFullName()
+{
+    return name + "." + extension;
+}
