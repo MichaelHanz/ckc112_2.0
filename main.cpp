@@ -1,10 +1,11 @@
-#include <iostream>
+#include "FileSystem.h"
 
 using namespace std;
 
 int main()
 {
 
-    cout << "Yo mama" << endl;
+    FileSystem fs;
+    fs.run();
     return 0;
 }
