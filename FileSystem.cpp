@@ -11,7 +11,7 @@ FileSystem::FileSystem()
     current = root;
 }
 
-// FIXED: Destructor to cleanly wipe allocated heap memory on application exit
+
 FileSystem::~FileSystem()
 {
     if (root != nullptr)
@@ -103,11 +103,9 @@ void FileSystem::showCurrentFolder() const
     cout << "-----------------------------------" << endl;
 }
 
-// ============================================================================
-// STUDENT 2 & TEAM DATA BRIDGE OPERATIONS (COMPLETED INTERFACES)
-// ============================================================================
 
-// 1. Bridges Menu directly to your safe Add Folder logic
+
+
 void FileSystem::createFolder(string foldername) 
 {
     // Instantiates the child subfolder on the heap
@@ -117,7 +115,7 @@ void FileSystem::createFolder(string foldername)
     current->addSubFolder(newSubFolder);
 }
 
-// 2. Bridges Menu directly to your optimized Add File logic
+
 void FileSystem::createFile(string filename, string type) 
 {
     // Instantiates a File on the stack framework and passes it to your validation engine
@@ -125,19 +123,19 @@ void FileSystem::createFile(string filename, string type)
     current->addFile(newFile);
 }
 
-// 3. Bridges Menu directly to your iterative local file deletion loop
+
 void FileSystem::deleteFile(string filename) 
 {
     current->deleteFile(filename);
 }
 
-// 4. Bridges Menu directly to your iterative local folder deletion loop
+
 void FileSystem::deleteFolder(string foldername) 
 {
     current->deleteFolder(foldername);
 }
 
-// 5. Bridges Menu to Student 1's recursive visual layout engine
+
 void FileSystem::displayFullTree() const 
 {
     cout << "\n--- Full Directory Mapping Tree ---" << endl;
@@ -145,7 +143,7 @@ void FileSystem::displayFullTree() const
     cout << "-----------------------------------" << endl;
 }
 
-// 6. Bridges Menu to Student 1's deep recursive search algorithm
+
 void FileSystem::searchFile(string filename) const 
 {
     Folder* result = current->searchFile(0, 0, filename);
@@ -178,9 +176,7 @@ void FileSystem::loadFile()
     cout << "[!] System Data Layer Initialized Successfully." << endl;
 }
 
-// ============================================================================
-// RUN CYCLE CONTROL SYSTEM
-// ============================================================================
+
 void FileSystem::run()
 {
     int choice = 0;
