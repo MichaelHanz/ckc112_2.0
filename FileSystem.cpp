@@ -2,10 +2,23 @@
 #include <algorithm>
 #include <iostream>
 
+using namespace std;
+
+// Constructor
 FileSystem::FileSystem()
 {
     root = new Folder("root", nullptr);
     current = root;
+}
+
+// FIXED: Destructor to cleanly wipe allocated heap memory on application exit
+FileSystem::~FileSystem()
+{
+    if (root != nullptr)
+    {
+        root->clearVectors(); // Runs your cascading heap garbage cleanup loop
+        delete root;
+    }
 }
 
 void FileSystem::showCurrentPath() const
@@ -21,7 +34,7 @@ void FileSystem::showCurrentPath() const
 
     reverse(path.begin(), path.end());
 
-    for (int i = 0; i < path.size(); i++)
+    for (size_t i = 0; i < path.size(); i++)
     {
         cout << path[i];
         if (i < path.size() - 1)
@@ -38,7 +51,6 @@ void FileSystem::goBack()
     }
     else
     {
-        // Error handling: already at root
         throw runtime_error("Already at root folder.");
     }
 }
@@ -53,14 +65,12 @@ void FileSystem::enterFolder(string foldername)
             return;
         }
     }
-    // Error handling: folder not found
     throw runtime_error("Folder not found: " + foldername);
 }
 
 void FileSystem::showCurrentFolder() const
 {
-
-    cout << "Current Folder:" << current->getFolderName() << "" << endl;
+    cout << "\nCurrent Folder: " << current->getFolderName() << endl;
     cout << "-----------------------------------" << endl;
 
     cout << "Folders:" << endl;
@@ -93,15 +103,92 @@ void FileSystem::showCurrentFolder() const
     cout << "-----------------------------------" << endl;
 }
 
+// ============================================================================
+// STUDENT 2 & TEAM DATA BRIDGE OPERATIONS (COMPLETED INTERFACES)
+// ============================================================================
+
+// 1. Bridges Menu directly to your safe Add Folder logic
+void FileSystem::createFolder(string foldername) 
+{
+    // Instantiates the child subfolder on the heap
+    Folder* newSubFolder = new Folder(foldername, current);
+    
+    // Hands it to your validation logic. If it fails validation, we free the memory.
+    current->addSubFolder(newSubFolder);
+}
+
+// 2. Bridges Menu directly to your optimized Add File logic
+void FileSystem::createFile(string filename, string type) 
+{
+    // Instantiates a File on the stack framework and passes it to your validation engine
+    File newFile(filename, type);
+    current->addFile(newFile);
+}
+
+// 3. Bridges Menu directly to your iterative local file deletion loop
+void FileSystem::deleteFile(string filename) 
+{
+    current->deleteFile(filename);
+}
+
+// 4. Bridges Menu directly to your iterative local folder deletion loop
+void FileSystem::deleteFolder(string foldername) 
+{
+    current->deleteFolder(foldername);
+}
+
+// 5. Bridges Menu to Student 1's recursive visual layout engine
+void FileSystem::displayFullTree() const 
+{
+    cout << "\n--- Full Directory Mapping Tree ---" << endl;
+    current->displayTree("", true, 0, 0);
+    cout << "-----------------------------------" << endl;
+}
+
+// 6. Bridges Menu to Student 1's deep recursive search algorithm
+void FileSystem::searchFile(string filename) const 
+{
+    Folder* result = current->searchFile(0, 0, filename);
+    if (result != nullptr)
+    {
+        cout << "Success: File '" << filename << "' located inside path: ";
+        
+        // Print the path structure where the file lives
+        vector<string> foundPath;
+        Folder* temp = result;
+        while(temp != nullptr) {
+            foundPath.push_back(temp->getFolderName());
+            temp = temp->getParent();
+        }
+        reverse(foundPath.begin(), foundPath.end());
+        for (size_t i = 0; i < foundPath.size(); i++) {
+            cout << foundPath[i] << (i < foundPath.size() - 1 ? "/" : "");
+        }
+        cout << "/" << filename << endl;
+    }
+    else
+    {
+        cout << "Search Failed: File '" << filename << "' could not be tracked anywhere in this tree branch.\n";
+    }
+}
+
+// Optional Initialized Boot Loader
+void FileSystem::loadFile() 
+{
+    cout << "[!] System Data Layer Initialized Successfully." << endl;
+}
+
+// ============================================================================
+// RUN CYCLE CONTROL SYSTEM
+// ============================================================================
 void FileSystem::run()
 {
     int choice = 0;
 
     do
     {
-        // Print the menu options (1-11)
         cout << "\n===================================" << endl;
-        cout << "     Mini File System Explorer     " << endl;
+        cout << "      Mini File System Explorer     " << endl;
         cout << "===================================" << endl;
         cout << "1. Create Folder" << endl;
         cout << "2. Create File" << endl;
@@ -116,11 +203,9 @@ void FileSystem::run()
         cout << "11. Exit" << endl;
         cout << "===================================" << endl;
 
-        // Asking user for choice
         cout << "Enter your choice: ";
         cin >> choice;
 
-        // Robustness: Handle non-integer inputs (e.g., user types "a" instead of "1")
         if (cin.fail())
         {
             cin.clear();
@@ -129,10 +214,8 @@ void FileSystem::run()
             continue;
         }
 
-        // Declare any needed string variables for user input
         string folderName, fileName, fileExtensions;
 
-        // 6. Use switch(choice) wrapped in try/catch
         try
         {
             switch (choice)
@@ -141,6 +224,7 @@ void FileSystem::run()
                 cout << "Enter folder name: ";
                 cin.ignore();
                 getline(cin, folderName);
+                createFolder(folderName); // FIXED: Added the missing function execution command here!
                 break;
 
             case 2:
@@ -160,7 +244,7 @@ void FileSystem::run()
                 break;
 
             case 5:
-                cout << "Enter file name to search: ";
+                cout << "Enter file name to search (with extension, e.g., notes.txt): ";
                 cin >> fileName;
                 searchFile(fileName);
                 break;
@@ -176,7 +260,7 @@ void FileSystem::run()
                 break;
 
             case 8:
-                cout << "Enter file name to delete: ";
+                cout << "Enter file name to delete (with extension, e.g., note.txt): ";
                 cin >> fileName;
                 deleteFile(fileName);
                 break;
@@ -202,17 +286,8 @@ void FileSystem::run()
         }
         catch (const exception &e)
         {
-            // Catch any runtime_error or invalid_argument thrown by the functions
             cout << "\n[!] Operation Failed: " << e.what() << endl;
         }
 
-    } while (choice != 11); // 7. While loop condition
+    } while (choice != 11);
 }
-
-void FileSystem::createFolder(string foldername) {}
-void FileSystem::createFile(string filename, string type) {}
-void FileSystem::displayFullTree() const {}
-void FileSystem::searchFile(string filename) const {}
-void FileSystem::deleteFile(string filename) {}
-void FileSystem::deleteFolder(string foldername) {}
-void FileSystem::loadFile() {}
