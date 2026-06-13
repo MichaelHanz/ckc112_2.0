@@ -4,20 +4,17 @@
 
 using namespace std;
 
-// Constructor
 FileSystem::FileSystem()
 {
     root = new Folder("root", nullptr);
     current = root;
 }
 
-
 FileSystem::~FileSystem()
 {
     if (root != nullptr)
     {
-        root->clearVectors(); // Runs your cascading heap garbage cleanup loop
-        delete root;
+        delete root; 
     }
 }
 
@@ -103,38 +100,27 @@ void FileSystem::showCurrentFolder() const
     cout << "-----------------------------------" << endl;
 }
 
-
-
-
 void FileSystem::createFolder(string foldername) 
 {
-    // Instantiates the child subfolder on the heap
     Folder* newSubFolder = new Folder(foldername, current);
-    
-    // Hands it to your validation logic. If it fails validation, we free the memory.
     current->addSubFolder(newSubFolder);
 }
 
-
 void FileSystem::createFile(string filename, string type) 
 {
-    // Instantiates a File on the stack framework and passes it to your validation engine
     File newFile(filename, type);
     current->addFile(newFile);
 }
-
 
 void FileSystem::deleteFile(string filename) 
 {
     current->deleteFile(filename);
 }
 
-
 void FileSystem::deleteFolder(string foldername) 
 {
     current->deleteFolder(foldername);
 }
-
 
 void FileSystem::displayFullTree() const 
 {
@@ -143,15 +129,12 @@ void FileSystem::displayFullTree() const
     cout << "-----------------------------------" << endl;
 }
 
-
 void FileSystem::searchFile(string filename) const 
 {
     Folder* result = current->searchFile(0, 0, filename);
     if (result != nullptr)
     {
         cout << "Success: File '" << filename << "' located inside path: ";
-        
-        // Print the path structure where the file lives
         vector<string> foundPath;
         Folder* temp = result;
         while(temp != nullptr) {
@@ -170,17 +153,14 @@ void FileSystem::searchFile(string filename) const
     }
 }
 
-// Optional Initialized Boot Loader
 void FileSystem::loadFile() 
 {
     cout << "[!] System Data Layer Initialized Successfully." << endl;
 }
 
-
 void FileSystem::run()
 {
     int choice = 0;
-
     do
     {
         cout << "\n===================================" << endl;
@@ -220,9 +200,8 @@ void FileSystem::run()
                 cout << "Enter folder name: ";
                 cin.ignore();
                 getline(cin, folderName);
-                createFolder(folderName); // FIXED: Added the missing function execution command here!
+                createFolder(folderName);
                 break;
-
             case 2:
                 cout << "Enter file name: ";
                 cin >> fileName;
@@ -230,51 +209,41 @@ void FileSystem::run()
                 cin >> fileExtensions;
                 createFile(fileName, fileExtensions);
                 break;
-
             case 3:
                 showCurrentFolder();
                 break;
-
             case 4:
                 displayFullTree();
                 break;
-
             case 5:
                 cout << "Enter file name to search (with extension, e.g., notes.txt): ";
                 cin >> fileName;
                 searchFile(fileName);
                 break;
-
             case 6:
                 cout << "Enter folder name to enter: ";
                 cin >> folderName;
                 enterFolder(folderName);
                 break;
-
             case 7:
                 goBack();
                 break;
-
             case 8:
                 cout << "Enter file name to delete (with extension, e.g., note.txt): ";
                 cin >> fileName;
                 deleteFile(fileName);
                 break;
-
             case 9:
                 cout << "Enter folder name to delete: ";
                 cin >> folderName;
                 deleteFolder(folderName);
                 break;
-
             case 10:
                 showCurrentPath();
                 break;
-
             case 11:
                 cout << "Goodbye! Exiting Mini File System Explorer..." << endl;
                 break;
-
             default:
                 cout << "Error: Invalid choice. Please select an option between 1 and 11." << endl;
                 break;
@@ -284,6 +253,5 @@ void FileSystem::run()
         {
             cout << "\n[!] Operation Failed: " << e.what() << endl;
         }
-
     } while (choice != 11);
 }
