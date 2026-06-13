@@ -23,14 +23,17 @@ public:
     void deleteFolder(string foldername);
 
     // Student 1
-    bool searchFile(string filename);
-    void displayTree(int depth) const;
+    void displayTree(string prefix, bool isLast, int folderIndex, int fileIndex) const;
+    Folder* searchFile(int fileIndex, int folderIndex, string targetFile);
+    Folder* deleteFile(int fileIndex, int folderIndex, string removeFIle);
+    Folder* deleteFolder(int index, string removeFolder);
 
     // Student 3
     vector<File> getFiles() const;
     Folder *getParent() const;
     vector<Folder *> getSubFolders() const;
     string getFolderName() const;
+    
 };
 
 #endif

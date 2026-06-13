@@ -12,7 +12,7 @@ class File
 
 public:
     File(string name, string extension);
-    string getFullName();
+    string getFullName() const; 
 };
 
 #endif
