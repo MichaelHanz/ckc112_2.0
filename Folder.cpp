@@ -95,14 +95,6 @@ void Folder::deleteFolder(string foldername) {
 }
 
 
-void Folder::clearVectors() {
-    files.clear();
-    for (Folder* sub : subfolders) {
-        delete sub; 
-    }
-    subfolders.clear();
-}
-
 
 
 Folder* Folder::searchFile(int fileIndex, int folderIndex, string targetFile) {
