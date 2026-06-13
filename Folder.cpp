@@ -7,6 +7,12 @@ using namespace std;
 Folder::Folder(string name, Folder *parent)
     : name(name), parent(parent) {}
 
+Folder::~Folder() {
+    for (Folder* sub : subfolders) {
+        delete sub; 
+    }
+    subfolders.clear();
+}
 
 vector<File> Folder::getFiles() const {
     return files;
@@ -24,16 +30,13 @@ vector<Folder *> Folder::getSubFolders() const {
     return subfolders;
 }
 
-
-
+// Student 2 Logic
 void Folder::addFile(File file) {
-    // Check for empty values inside the passed object
     if (file.getName().empty() || file.getExtension().empty()) {
         cout << "Error: File name or extension cannot be empty!\n";
         return;
     }
 
-    // Check for duplicates
     for (const File& existingFile : files) {
         if (existingFile.getName() == file.getName() && existingFile.getExtension() == file.getExtension()) {
             cout << "Error: A file named '" << file.getFullName() << "' already exists.\n";
@@ -45,48 +48,44 @@ void Folder::addFile(File file) {
     cout << "File '" << file.getFullName() << "' created successfully.\n";
 }
 
-
 void Folder::addSubFolder(Folder *folder) {
     if (folder == nullptr) return;
 
     if (folder->getFolderName().empty()) {
         cout << "Error: Folder name cannot be empty!\n";
+        delete folder;
         return;
     }
 
-    // Check for duplicates
     for (Folder* const& sub : subfolders) {
         if (sub->getFolderName() == folder->getFolderName()) {
             cout << "Error: A folder named '" << folder->getFolderName() << "' already exists here.\n";
+            delete folder; // Clean memory if rejected
             return;
         }
     }
 
-    // Link the parent relationship manually since the folder was created outside
     folder->parent = this; 
-    
     subfolders.push_back(folder); 
     cout << "Folder '" << folder->getFolderName() << "' created successfully.\n";
 }
-
 
 void Folder::deleteFile(string filename) {
     for (vector<File>::iterator it = files.begin(); it != files.end(); ++it) {
         if (it->getFullName() == filename || it->getName() == filename) {
             files.erase(it); 
-            cout << "File '" << filename << "' has been deleted.\n";
+            cout << "File '" << filename << "' has been deleted from current directory.\n";
             return;
         }
     }
     cout << "Error: File '" << filename << "' not found in current folder.\n";
 }
 
-
 void Folder::deleteFolder(string foldername) {
     for (vector<Folder*>::iterator it = subfolders.begin(); it != subfolders.end(); ++it) {
         if ((*it)->getFolderName() == foldername) {
-            delete *it;           // Deletes physical memory allocation from the Heap
-            subfolders.erase(it); // Wipes the empty slot out of the tracker array
+            delete *it;           // Safely calls ~Folder() cascading chain
+            subfolders.erase(it); 
             cout << "Folder '" << foldername << "' removed from directory list.\n";
             return;
         }
@@ -94,9 +93,7 @@ void Folder::deleteFolder(string foldername) {
     cout << "Error: Folder '" << foldername << "' not found in current folder.\n";
 }
 
-
-
-
+// Student 1 Algorithms
 Folder* Folder::searchFile(int fileIndex, int folderIndex, string targetFile) {
     if (fileIndex < files.size()) {
         if (files[fileIndex].getFullName() == targetFile) {
