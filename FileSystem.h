@@ -8,9 +8,10 @@ using namespace std;
 
 class FileSystem
 {
-
     Folder *root;
     Folder *current;
+    vector<string> splitString(string str, char delimiter); // Helper function to split the root strings
+    Folder *findFolder(vector<string> pathSegments);        // Helper Function for loadFromFile
 
 public:
     FileSystem();

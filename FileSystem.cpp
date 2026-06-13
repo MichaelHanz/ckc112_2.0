@@ -1,11 +1,13 @@
 #include "FileSystem.h"
 #include <algorithm>
 #include <iostream>
+#include <fstream>
 
 FileSystem::FileSystem()
 {
     root = new Folder("root", nullptr);
     current = root;
+    loadFile();
 }
 
 void FileSystem::showCurrentPath() const
@@ -209,10 +211,166 @@ void FileSystem::run()
     } while (choice != 11); // 7. While loop condition
 }
 
+Folder *FileSystem::findFolder(vector<string> pathSegments)
+{
+    // 1. Create a temp Folder* pointing to root
+    Folder *temp = root;
+
+    // 2. Loop through pathSegments STARTING from index 1 (skip "Root")
+
+    for (int i = 1; i < pathSegments.size(); i++)
+    {
+        // 3. Assume not found — set a flag
+        bool found = false;
+
+        // 4. Loop through temp's subfolders
+        for (Folder *subfolder : temp->getSubFolders())
+        {
+            // if subfolder name matches current segment
+            if (subfolder->getFolderName() == pathSegments[i])
+            {
+                // move temp into it, break
+                temp = subfolder;
+                found = true;
+                break;
+            }
+        }
+
+        // 5. If not found after inner loop → return nullptr
+        if (!found)
+        {
+            return nullptr;
+        }
+    }
+    // 6. After all segments processed → return temp
+    return temp;
+}
+
+vector<string> FileSystem::splitString(string str, char delimiter)
+{
+    vector<string> segments;
+    string segment = "";
+
+    for (int i = 0; i < str.size(); i++)
+    {
+        if (str[i] == delimiter)
+        {
+            segments.push_back(segment);
+            segment = "";
+        }
+        else
+        {
+            segment += str[i];
+        }
+    }
+    segments.push_back(segment);
+    return segments;
+}
+
+void FileSystem::loadFile()
+{
+    // 1. Open "FileSystem.txt" using ifstream
+    ifstream file("filesystem.txt");
+
+    // 2. Check if file opened successfully, if not print error and return
+    if (!file.is_open())
+    {
+        cout << "Error: Could not open filesystem.txt" << endl;
+        return;
+    }
+    string line;
+
+    // 3. Read line by line using getline()
+
+    while (getline(file, line))
+    {
+        if (line.empty())
+            continue;
+
+        // 4. Split line by space to get type and path
+        vector<string> lineParts = splitString(line, ' ');
+
+        // Safety check to ensure the line has at least a type and a path to avoid checking grammatical errors
+        if (lineParts.size() < 2)
+            continue;
+
+        string type = lineParts[0];
+        string fullPath = lineParts[1];
+
+        // 5. Split path by "/" to get path segments
+        vector<string> pathSegments = splitString(fullPath, '/');
+
+        if (pathSegments.empty())
+            continue;
+
+        // 6. If type == "FOLDER":
+        if (type == "FOLDER")
+        {
+            // get parent segments (all except last)
+            vector<string> parentPath;
+            for (size_t i = 0; i < pathSegments.size() - 1; i++)
+            {
+                parentPath.push_back(pathSegments[i]);
+            }
+
+            string newFolderName = pathSegments.back();
+
+            // find parent folder using findFolder()
+            Folder *parentFolder = findFolder(parentPath);
+
+            if (parentFolder != nullptr)
+            {
+                // create new Folder* using new
+                Folder *newFolder = new Folder(newFolderName, parentFolder);
+                // add to parent's subfolders
+                parentFolder->addSubFolder(newFolder);
+            }
+        }
+        // 7. If type == "FILE":
+        else if (type == "FILE")
+        {
+            // get parent segments (all except last)
+            vector<string> parentPath;
+            for (size_t i = 0; i < pathSegments.size() - 1; i++)
+            {
+                parentPath.push_back(pathSegments[i]);
+            }
+
+            // get last segment (e.g. "assignment.docx")
+            string fileString = pathSegments.back();
+
+            // split last segment by "." to get name and extension
+            vector<string> fileParts = splitString(fileString, '.');
+
+            string fileName = fileParts[0];
+            string fileExt = "";
+
+            // Ensure there is an extension before trying to access index 1
+            if (fileParts.size() > 1)
+            {
+                fileExt = fileParts[1];
+            }
+
+            // find parent folder using findFolder()
+            Folder *parentFolder = findFolder(parentPath);
+
+            if (parentFolder != nullptr)
+            {
+                // create File object
+                File newFile(fileName, fileExt);
+                // add to parent's files
+                parentFolder->addFile(newFile);
+            }
+        }
+    }
+
+    file.close();
+    cout << "System structure loaded successfully from filesystem.txt." << endl;
+}
+
 void FileSystem::createFolder(string foldername) {}
 void FileSystem::createFile(string filename, string type) {}
 void FileSystem::displayFullTree() const {}
 void FileSystem::searchFile(string filename) const {}
 void FileSystem::deleteFile(string filename) {}
 void FileSystem::deleteFolder(string foldername) {}
-void FileSystem::loadFile() {}
