@@ -14,7 +14,6 @@ public:
     // Constructor (Optimized with const references)
     File(const string& fileName, const string& fileExtension);
 
-    // Getters (Required for your duplicate checking logic in Folder.cpp)
     string getName() const;
     string getExtension() const;
     
