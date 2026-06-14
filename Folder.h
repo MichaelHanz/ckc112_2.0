@@ -15,18 +15,17 @@ class Folder
     vector<Folder *> subfolders;
 
 public:
-    Folder(string name, Folder *parent);
-    // Student 2
-    void addFile(File file);
+    Folder(string name, Folder *parent); // Constructor For Folder Class
+    ~Folder();                           // Destructor for Folder Class
+
+    void addFile(const File &file);
     void addSubFolder(Folder *folder);
-    void deleteFile(string filename);
-    void deleteFolder(string foldername);
 
-    // Student 1
-    bool searchFile(string filename);
-    void displayTree(int depth) const;
+    void displayTree(const string &prefix) const;
+    Folder *searchFile(int fileIndex, int folderIndex, const string &targetFile);
+    Folder *deleteFile(int fileIndex, int folderIndex, const string &removeFile);
+    Folder *deleteFolder(int folderIndex, const string &removeFolder);
 
-    // Student 3
     vector<File> getFiles() const;
     Folder *getParent() const;
     vector<Folder *> getSubFolders() const;
