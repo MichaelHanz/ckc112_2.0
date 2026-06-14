@@ -42,19 +42,16 @@ void FileSystem::showCurrentPath() const
 
 void FileSystem::goBack()
 {
-    if (current->getParent() != nullptr)
+    if (current->getParent() == nullptr)
     {
-        current = current->getParent();
+        throw RootNavigationException();
     }
-    else
-    {
-        // Error handling: already at root
-        throw runtime_error("Already at root folder.");
-    }
+    current = current->getParent();
 }
 
 void FileSystem::enterFolder(const string &foldername)
 {
+    
     for (Folder *subfolder : current->getSubFolders())
     {
         if (subfolder->getFolderName() == foldername)
@@ -63,10 +60,8 @@ void FileSystem::enterFolder(const string &foldername)
             return;
         }
     }
-    // Error handling: folder not found
-    throw runtime_error("Folder not found: " + foldername);
+    throw FolderNavigationException(foldername);
 }
-
 void FileSystem::showCurrentFolder() const
 {
 
@@ -218,13 +213,29 @@ void FileSystem::run()
                 break;
             }
         }
-        catch (const exception &e)
+        
+        catch (Folder::EmptyNameException)
         {
-            // Catch any runtime_error or invalid_argument thrown by the functions
-            cout << "\n [!] Operation Failed: " << e.what() << endl;
+            cout << "\n[!] Execution Error: Names or formatting extensions cannot be left blank!\n";
         }
-
-    } while (choice != 11); // 7. While loop condition
+       
+        catch (Folder::DuplicateItemException e)
+        {
+            cout << "\n[!] Conflict Error: '" << e.getName() << "' already exists in this folder location!\n";
+        }
+        catch (Folder::ItemNotFoundException e)
+        {
+            cout << "\n[!] Processing Error: Target item '" << e.getName() << "' could not be located anywhere in this context!\n";
+        }
+        catch (FileSystem::RootNavigationException)
+        {
+            cout << "\n[!] Navigation Error: You are already at the Root node. Cannot step back!\n";
+        }
+        catch (FileSystem::FolderNavigationException e)
+        {
+            cout << "\n[!] Navigation Error: Directory match failed. Target '" << e.getName() << "' does not exist here!\n";
+            
+    } while (choice != 11);
 }
 
 Folder *FileSystem::findFolder(vector<string> pathSegments)
