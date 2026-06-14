@@ -15,22 +15,37 @@ class Folder
     vector<Folder *> subfolders;
 
 public:
+    //-------------------------exception--------------------------------
+    class EmptyNameException {}; // Thrown when a string input is blank
+    
+    class DuplicateItemException {
+    private:
+        string itemName;
+    public:
+        DuplicateItemException(string name) { itemName = name; }
+        string getName() const { return itemName; }
+    };
+
+    class ItemNotFoundException {
+    private:
+        string targetName;
+    public:
+        ItemNotFoundException(string name) { targetName = name; }
+        string getName() const { return targetName; }
+    };
+    // =================================================================
+
     Folder(string name, Folder *parent);
-    ~Folder(); 
+    ~Folder();
 
-    // Student 2
-    void addFile(File file);
+    void addFile(const File &file);
     void addSubFolder(Folder *folder);
-    void deleteFile(string filename);
-    void deleteFolder(string foldername);
 
-    // Student 1 
-    void displayTree(string prefix, bool isLast, int folderIndex, int fileIndex) const;
-    Folder* searchFile(int fileIndex, int folderIndex, string targetFile);
-    Folder* deleteFile(int fileIndex, int folderIndex, string removeFile);
-    Folder* deleteFolder(int folderIndex, string removeFolder);
+    void displayTree(const string &prefix) const;
+    Folder *searchFile(int fileIndex, int folderIndex, const string &targetFile);
+    Folder *deleteFile(int fileIndex, int folderIndex, const string &removeFile);
+    Folder *deleteFolder(int folderIndex, const string &removeFolder);
 
-    // Student 3
     vector<File> getFiles() const;
     Folder *getParent() const;
     vector<Folder *> getSubFolders() const;
