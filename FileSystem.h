@@ -3,38 +3,46 @@
 
 #include "Folder.h"
 #include "File.h"
-#include <string>
 
 using namespace std;
 
 class FileSystem
 {
-private:
     Folder *root;
     Folder *current;
+    vector<string> splitString(string str, char delimiter);
+    Folder *findFolder(vector<string> pathSegments);
 
 public:
+    //------------------------exception--------------------------------
+    class RootNavigationException {}; 
+    class FolderNavigationException {
+    private:
+        string missingFolder;
+    public:
+        FolderNavigationException(string name) { missingFolder = name; }
+        string getName() const { return missingFolder; }
+    };
+    // =================================================================
+
     FileSystem();
-    ~FileSystem(); 
-    
+    ~FileSystem();
+
     void loadFile();
     void run();
 
-    
-    void enterFolder(string foldername);
+    void enterFolder(const string &foldername);
     void showCurrentPath() const;
     void showCurrentFolder() const;
     void goBack();
 
-    
-    void createFolder(string foldername);
-    void createFile(string filename, string type);
-    void deleteFile(string filename);
-    void deleteFolder(string foldername);
+    void createFolder(const string &foldername);
+    void createFile(const string &filename, const string &type);
+    void deleteFile(const string &filename);
+    void deleteFolder(const string &foldername);
 
-    
     void displayFullTree() const;
-    void searchFile(string filename) const;
+    void searchFile(const string &filename) const;
 };
 
 #endif
