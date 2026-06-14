@@ -1,4 +1,4 @@
-#ifndef FOLDER_H
+ifndef FOLDER_H
 #define FOLDER_H
 
 #include "File.h"
@@ -15,8 +15,28 @@ class Folder
     vector<Folder *> subfolders;
 
 public:
-    Folder(string name, Folder *parent); // Constructor For Folder Class
-    ~Folder();                           // Destructor for Folder Class
+    //-------------------------exception--------------------------------
+    class EmptyNameException {}; // Thrown when a string input is blank
+    
+    class DuplicateItemException {
+    private:
+        string itemName;
+    public:
+        DuplicateItemException(string name) { itemName = name; }
+        string getName() const { return itemName; }
+    };
+
+    class ItemNotFoundException {
+    private:
+        string targetName;
+    public:
+        ItemNotFoundException(string name) { targetName = name; }
+        string getName() const { return targetName; }
+    };
+    // =================================================================
+
+    Folder(string name, Folder *parent);
+    ~Folder();
 
     void addFile(const File &file);
     void addSubFolder(Folder *folder);
