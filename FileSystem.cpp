@@ -42,19 +42,17 @@ void FileSystem::showCurrentPath() const
 
 void FileSystem::goBack()
 {
-    if (current->getParent() != nullptr)
+    // Requirement 7.8: If the current folder is Root, an exception must be handled
+    if (current->getParent() == nullptr)
     {
-        current = current->getParent();
+        throw RootNavigationException();
     }
-    else
-    {
-        // Error handling: already at root
-        throw runtime_error("Already at root folder.");
-    }
+    current = current->getParent();
 }
 
 void FileSystem::enterFolder(const string &foldername)
 {
+    // Requirement 7.7: If folder doesn't exist, handle using exception handling
     for (Folder *subfolder : current->getSubFolders())
     {
         if (subfolder->getFolderName() == foldername)
@@ -63,10 +61,8 @@ void FileSystem::enterFolder(const string &foldername)
             return;
         }
     }
-    // Error handling: folder not found
-    throw runtime_error("Folder not found: " + foldername);
+    throw FolderNavigationException(foldername);
 }
-
 void FileSystem::showCurrentFolder() const
 {
 
