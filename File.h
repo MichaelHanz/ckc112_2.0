@@ -11,8 +11,12 @@ class File
     string extension;
 
 public:
-    File(string name, string extension);
-    string getFullName();
+    File(const string &fileName, const string &fileExtension);
+
+    string getName() const;
+    string getExtension() const;
+
+    string getFullName() const;
 };
 
 #endif

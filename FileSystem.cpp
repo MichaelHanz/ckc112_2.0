@@ -5,9 +5,17 @@
 
 FileSystem::FileSystem()
 {
-    root = new Folder("root", nullptr);
+    root = new Folder("Root", nullptr);
     current = root;
     loadFile();
+}
+
+FileSystem::~FileSystem()
+{
+    delete root;
+
+    root = nullptr;
+    current = nullptr;
 }
 
 void FileSystem::showCurrentPath() const
@@ -45,7 +53,7 @@ void FileSystem::goBack()
     }
 }
 
-void FileSystem::enterFolder(string foldername)
+void FileSystem::enterFolder(const string &foldername)
 {
     for (Folder *subfolder : current->getSubFolders())
     {
@@ -141,14 +149,16 @@ void FileSystem::run()
             {
             case 1:
                 cout << "Enter folder name: ";
-                cin.ignore();
+                cin.ignore(); // Clears the newline left by the menu choice
                 getline(cin, folderName);
+                createFolder(folderName);
                 break;
 
             case 2:
                 cout << "Enter file name: ";
-                cin >> fileName;
-                cout << "Enter file extension (e.g., pdf, docx): ";
+                cin.ignore(); // Clears the newline left by the menu choice
+                getline(cin, fileName);
+                cout << "Enter file extension (Example: pdf, docx or txt): ";
                 cin >> fileExtensions;
                 createFile(fileName, fileExtensions);
                 break;
@@ -163,29 +173,35 @@ void FileSystem::run()
 
             case 5:
                 cout << "Enter file name to search: ";
-                cin >> fileName;
+                cin.ignore();
+                getline(cin, fileName);
                 searchFile(fileName);
                 break;
 
             case 6:
                 cout << "Enter folder name to enter: ";
-                cin >> folderName;
+                cin.ignore();
+                getline(cin, folderName);
                 enterFolder(folderName);
+                cout << "Moved into: " << folderName << endl;
                 break;
 
             case 7:
                 goBack();
+                cout << "Moved back to: " << current->getFolderName() << endl;
                 break;
 
             case 8:
                 cout << "Enter file name to delete: ";
-                cin >> fileName;
+                cin.ignore();
+                getline(cin, fileName);
                 deleteFile(fileName);
                 break;
 
             case 9:
                 cout << "Enter folder name to delete: ";
-                cin >> folderName;
+                cin.ignore();
+                getline(cin, folderName);
                 deleteFolder(folderName);
                 break;
 
@@ -205,7 +221,7 @@ void FileSystem::run()
         catch (const exception &e)
         {
             // Catch any runtime_error or invalid_argument thrown by the functions
-            cout << "\n[!] Operation Failed: " << e.what() << endl;
+            cout << "\n [!] Operation Failed: " << e.what() << endl;
         }
 
     } while (choice != 11); // 7. While loop condition
@@ -368,9 +384,108 @@ void FileSystem::loadFile()
     cout << "System structure loaded successfully from filesystem.txt." << endl;
 }
 
-void FileSystem::createFolder(string foldername) {}
-void FileSystem::createFile(string filename, string type) {}
-void FileSystem::displayFullTree() const {}
-void FileSystem::searchFile(string filename) const {}
-void FileSystem::deleteFile(string filename) {}
-void FileSystem::deleteFolder(string foldername) {}
+void FileSystem::createFolder(const string &foldername)
+{
+    Folder *newFolder = new Folder(foldername, current);
+
+    current->addSubFolder(newFolder);
+}
+
+void FileSystem::createFile(const string &filename, const string &type)
+{
+    File newFile(filename, type);
+
+    current->addFile(newFile);
+}
+
+void FileSystem::displayFullTree() const
+{
+    cout << "\n===================================" << endl;
+    cout << "        Full Folder Tree           " << endl;
+    cout << "===================================" << endl;
+
+    if (root != nullptr)
+    {
+        // Print the Root folder itself
+        cout << root->getFolderName() << "/" << endl;
+
+        // Kick off the recursion with an empty starting prefix
+        root->displayTree("");
+    }
+    else
+    {
+        cout << "(File system is completely empty)" << endl;
+    }
+
+    cout << "===================================\n"
+         << endl;
+}
+void FileSystem::searchFile(const string &filename) const
+{
+    cout << "\n===================================" << endl;
+    cout << "  Searching for: " << filename << endl;
+    cout << "===================================" << endl;
+
+    if (root != nullptr)
+    {
+
+        Folder *foundFolder = root->searchFile(0, 0, filename);
+
+        if (foundFolder != nullptr)
+        {
+            cout << "[+] Success! File found." << endl;
+            cout << "[+] Location: Inside the '" << foundFolder->getFolderName() << "' folder." << endl;
+        }
+        else
+        {
+            cout << "[-] File not found: '" << filename << "' does not exist in the system." << endl;
+        }
+    }
+    else
+    {
+        cout << "[-] Error: The file system is entirely empty." << endl;
+    }
+
+    cout << "===================================\n"
+         << endl;
+}
+void FileSystem::deleteFile(const string &filename)
+{
+    if (root == nullptr)
+    {
+        cout << "Error: The file system is entirely empty.\n";
+        return;
+    }
+
+    Folder *deletedFromFolder = root->deleteFile(0, 0, filename);
+
+    if (deletedFromFolder != nullptr)
+    {
+        cout << "Success: File '" << filename << "' was deleted from the '"
+             << deletedFromFolder->getFolderName() << "' folder.\n";
+    }
+    else
+    {
+        cout << "Error: File '" << filename << "' not found anywhere in the system.\n";
+    }
+}
+
+void FileSystem::deleteFolder(const string &foldername)
+{
+    if (current == nullptr)
+    {
+        cout << "Error: No current directory selected.\n";
+        return;
+    }
+
+    Folder *result = current->deleteFolder(0, foldername);
+
+    if (result != nullptr)
+    {
+        cout << "Success: Folder '" << foldername << "' and all its contents were safely deleted.\n";
+    }
+    else
+    {
+        cout << "Error: Folder '" << foldername << "' not found in the current directory.\n";
+    }
+}

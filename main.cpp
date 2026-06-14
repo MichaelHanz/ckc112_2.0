@@ -5,7 +5,7 @@ using namespace std;
 int main()
 {
 
-    FileSystem fs;
-    fs.run();
+    FileSystem MiniFileSystem;
+    MiniFileSystem.run();
     return 0;
 }
