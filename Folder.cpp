@@ -36,18 +36,18 @@ vector<Folder *> Folder::getSubFolders() const
 
 void Folder::addFile(const File &file)
 {
+    
     if (file.getName().empty() || file.getExtension().empty())
     {
-        cout << "Error: File name or extension cannot be empty!\n";
-        return;
+        throw EmptyNameException(); 
     }
 
+    
     for (const File &existingFile : files)
     {
         if (existingFile.getName() == file.getName() && existingFile.getExtension() == file.getExtension())
         {
-            cout << "Error: A file named '" << file.getFullName() << "' already exists.\n";
-            return;
+            throw DuplicateItemException(file.getFullName()); 
         }
     }
 
@@ -57,23 +57,22 @@ void Folder::addFile(const File &file)
 
 void Folder::addSubFolder(Folder *folder)
 {
-    if (folder == nullptr)
-        return;
+    if (folder == nullptr) return;
 
+    
     if (folder->getFolderName().empty())
     {
-        cout << "Error: Folder name cannot be empty!\n";
-        delete folder;
-        return;
+        delete folder; // Manual memory cleanup before control structure termination
+        throw EmptyNameException();
     }
 
+  
     for (Folder *sub : subfolders)
     {
         if (sub->getFolderName() == folder->getFolderName())
         {
-            cout << "Error: A folder named '" << folder->getFolderName() << "' already exists here.\n";
-            delete folder; // Clean memory Once an error occurred
-            return;
+            delete folder; // Structural memory safety step
+            throw DuplicateItemException(folder->getFolderName());
         }
     }
 
@@ -103,6 +102,12 @@ Folder *Folder::deleteFile(int fileIndex, int folderIndex, const string &removeF
         }
         return deleteFile(fileIndex, folderIndex + 1, removeFile);
     }
+
+    
+    if (parent == nullptr)
+    {
+        throw ItemNotFoundException(removeFile);
+    }
     return nullptr;
 }
 
@@ -114,14 +119,15 @@ Folder *Folder::deleteFolder(int folderIndex, const string &removeFolder)
         {
             Folder *folderToDelete = subfolders[folderIndex];
             subfolders.erase(subfolders.begin() + folderIndex);
-            delete folderToDelete;
+            delete folderToDelete; // Triggers cascading destructor cleanup loop
             return this;
         }
         return deleteFolder(folderIndex + 1, removeFolder);
     }
-    return nullptr;
-}
 
+    
+    throw ItemNotFoundException(removeFolder);
+}
 Folder *Folder::searchFile(int fileIndex, int folderIndex, const string &targetFile)
 {
     if (fileIndex < files.size())
