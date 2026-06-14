@@ -42,7 +42,6 @@ void FileSystem::showCurrentPath() const
 
 void FileSystem::goBack()
 {
-    // Requirement 7.8: If the current folder is Root, an exception must be handled
     if (current->getParent() == nullptr)
     {
         throw RootNavigationException();
@@ -52,7 +51,7 @@ void FileSystem::goBack()
 
 void FileSystem::enterFolder(const string &foldername)
 {
-    // Requirement 7.7: If folder doesn't exist, handle using exception handling
+    
     for (Folder *subfolder : current->getSubFolders())
     {
         if (subfolder->getFolderName() == foldername)
