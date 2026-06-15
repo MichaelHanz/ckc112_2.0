@@ -14,11 +14,15 @@ class FileSystem
     Folder *findFolder(vector<string> pathSegments);
 
 public:
-    //------------------------exception--------------------------------
-    class RootNavigationException {}; 
-    class FolderNavigationException {
+    //------------------------exceptions--------------------------------
+    class RootNavigationException
+    {
+    }; // Throw when the user is in the root folder
+    class FolderNavigationException // Thrown when the name isnt on the folder vector
+    {
     private:
         string missingFolder;
+
     public:
         FolderNavigationException(string name) { missingFolder = name; }
         string getName() const { return missingFolder; }

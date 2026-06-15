@@ -36,18 +36,17 @@ vector<Folder *> Folder::getSubFolders() const
 
 void Folder::addFile(const File &file)
 {
-    
+
     if (file.getName().empty() || file.getExtension().empty())
     {
-        throw EmptyNameException(); 
+        throw EmptyNameException();
     }
 
-    
     for (const File &existingFile : files)
     {
         if (existingFile.getName() == file.getName() && existingFile.getExtension() == file.getExtension())
         {
-            throw DuplicateItemException(file.getFullName()); 
+            throw DuplicateItemException(file.getFullName());
         }
     }
 
@@ -57,16 +56,15 @@ void Folder::addFile(const File &file)
 
 void Folder::addSubFolder(Folder *folder)
 {
-    if (folder == nullptr) return;
+    if (folder == nullptr)
+        return;
 
-    
     if (folder->getFolderName().empty())
     {
         delete folder; // Manual memory cleanup before control structure termination
         throw EmptyNameException();
     }
 
-  
     for (Folder *sub : subfolders)
     {
         if (sub->getFolderName() == folder->getFolderName())
@@ -103,7 +101,6 @@ Folder *Folder::deleteFile(int fileIndex, int folderIndex, const string &removeF
         return deleteFile(fileIndex, folderIndex + 1, removeFile);
     }
 
-    
     if (parent == nullptr)
     {
         throw ItemNotFoundException(removeFile);
@@ -125,9 +122,9 @@ Folder *Folder::deleteFolder(int folderIndex, const string &removeFolder)
         return deleteFolder(folderIndex + 1, removeFolder);
     }
 
-    
     throw ItemNotFoundException(removeFolder);
 }
+
 Folder *Folder::searchFile(int fileIndex, int folderIndex, const string &targetFile)
 {
     if (fileIndex < files.size())
@@ -153,7 +150,7 @@ Folder *Folder::searchFile(int fileIndex, int folderIndex, const string &targetF
 
 void Folder::displayTree(const string &prefix) const
 {
-    // 1. Print all Files first
+    //  Prints all Files first
     for (size_t i = 0; i < files.size(); i++)
     {
         // Check if this is the very last item in the entire folder
@@ -162,10 +159,10 @@ void Folder::displayTree(const string &prefix) const
         cout << prefix << (isLastItem ? "|__ " : "|-- ") << files[i].getFullName() << "\n";
     }
 
-    // 2. Print all Subfolders (and trigger RECURSION)
+    // Prints all Subfolders using recursion
     for (size_t i = 0; i < subfolders.size(); i++)
     {
-        // Check if this is the last subfolder
+        // Checking for the rcursion
         bool isLastItem = (i == subfolders.size() - 1);
 
         cout << prefix << (isLastItem ? "|__ " : "|-- ") << subfolders[i]->getFolderName() << "\n";

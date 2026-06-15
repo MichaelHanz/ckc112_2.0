@@ -1,7 +1,9 @@
 #include "FileSystem.h"
-#include <algorithm>
+
 #include <iostream>
 #include <fstream>
+
+using namespace std;
 
 FileSystem::FileSystem()
 {
@@ -29,12 +31,10 @@ void FileSystem::showCurrentPath() const
         temp = temp->getParent();
     }
 
-    reverse(path.begin(), path.end());
-
-    for (int i = 0; i < path.size(); i++)
+    for (int i = path.size() - 1; i >= 0; i--)
     {
         cout << path[i];
-        if (i < path.size() - 1)
+        if (i > 0)
             cout << "/";
     }
     cout << endl;
@@ -51,7 +51,7 @@ void FileSystem::goBack()
 
 void FileSystem::enterFolder(const string &foldername)
 {
-    
+
     for (Folder *subfolder : current->getSubFolders())
     {
         if (subfolder->getFolderName() == foldername)
@@ -104,7 +104,7 @@ void FileSystem::run()
 
     do
     {
-        // Print the menu options (1-11)
+        // Printing the menu options (1-11)
         cout << "\n===================================" << endl;
         cout << "     Mini File System Explorer     " << endl;
         cout << "===================================" << endl;
@@ -125,19 +125,16 @@ void FileSystem::run()
         cout << "Enter your choice: ";
         cin >> choice;
 
-        // Robustness: Handle non-integer inputs (e.g., user types "a" instead of "1")
-        if (cin.fail())
+        // Input Validation
+        if (choice < 1 || choice > 11)
         {
-            cin.clear();
-            cin.ignore(10000, '\n');
-            cout << "Error: Invalid input. Please enter a number." << endl;
+            cout << "Error: Please enter a number between 1 and 11." << endl;
             continue;
         }
 
-        // Declare any needed string variables for user input
+        // Declares the needed string variables for user input
         string folderName, fileName, fileExtensions;
 
-        // 6. Use switch(choice) wrapped in try/catch
         try
         {
             switch (choice)
@@ -150,7 +147,7 @@ void FileSystem::run()
                 break;
 
             case 2:
-                cout << "Enter file name: ";
+                cout << "Enter file name without the extension (File): ";
                 cin.ignore(); // Clears the newline left by the menu choice
                 getline(cin, fileName);
                 cout << "Enter file extension (Example: pdf, docx or txt): ";
@@ -167,7 +164,7 @@ void FileSystem::run()
                 break;
 
             case 5:
-                cout << "Enter file name to search: ";
+                cout << "Enter file name ( file.txt ) to search: ";
                 cin.ignore();
                 getline(cin, fileName);
                 searchFile(fileName);
@@ -187,14 +184,14 @@ void FileSystem::run()
                 break;
 
             case 8:
-                cout << "Enter file name to delete: ";
+                cout << "Enter file name ( file.txt ) to delete: ";
                 cin.ignore();
                 getline(cin, fileName);
                 deleteFile(fileName);
                 break;
 
             case 9:
-                cout << "Enter folder name to delete: ";
+                cout << "Enter folder name ( file.txt ) to delete: ";
                 cin.ignore();
                 getline(cin, folderName);
                 deleteFolder(folderName);
@@ -213,12 +210,12 @@ void FileSystem::run()
                 break;
             }
         }
-        
+
         catch (Folder::EmptyNameException)
         {
             cout << "\n[!] Execution Error: Names or formatting extensions cannot be left blank!\n";
         }
-       
+
         catch (Folder::DuplicateItemException e)
         {
             cout << "\n[!] Conflict Error: '" << e.getName() << "' already exists in this folder location!\n";
@@ -234,53 +231,51 @@ void FileSystem::run()
         catch (FileSystem::FolderNavigationException e)
         {
             cout << "\n[!] Navigation Error: Directory match failed. Target '" << e.getName() << "' does not exist here!\n";
-            
+        }
     } while (choice != 11);
-}
+};
 
 Folder *FileSystem::findFolder(vector<string> pathSegments)
 {
-    // 1. Create a temp Folder* pointing to root
-    Folder *temp = root;
 
-    // 2. Loop through pathSegments STARTING from index 1 (skip "Root")
+    // Creates a temporary folder that points to root/
+    Folder *temp = root;
 
     for (int i = 1; i < pathSegments.size(); i++)
     {
-        // 3. Assume not found — set a flag
+        // Assume not found — set a flag
         bool found = false;
 
-        // 4. Loop through temp's subfolders
+        // Looping through the temp's subfolders
         for (Folder *subfolder : temp->getSubFolders())
         {
-            // if subfolder name matches current segment
+            // check if subfolder name matches current segment
             if (subfolder->getFolderName() == pathSegments[i])
             {
-                // move temp into it, break
                 temp = subfolder;
                 found = true;
                 break;
             }
         }
 
-        // 5. If not found after inner loop → return nullptr
+        // If not found after inner loop → return nullptr
         if (!found)
         {
             return nullptr;
         }
     }
-    // 6. After all segments processed → return temp
+
     return temp;
 }
 
-vector<string> FileSystem::splitString(string str, char delimiter)
+vector<string> FileSystem::splitString(string str, char splitter)
 {
     vector<string> segments;
     string segment = "";
 
     for (int i = 0; i < str.size(); i++)
     {
-        if (str[i] == delimiter)
+        if (str[i] == splitter)
         {
             segments.push_back(segment);
             segment = "";
@@ -296,10 +291,10 @@ vector<string> FileSystem::splitString(string str, char delimiter)
 
 void FileSystem::loadFile()
 {
-    // 1. Open "FileSystem.txt" using ifstream
+    // Opens "FileSystem.txt" using ifstream
     ifstream file("filesystem.txt");
 
-    // 2. Check if file opened successfully, if not print error and return
+    // To check if file opened successfully, if not print error and return
     if (!file.is_open())
     {
         cout << "Error: Could not open filesystem.txt" << endl;
@@ -307,14 +302,14 @@ void FileSystem::loadFile()
     }
     string line;
 
-    // 3. Read line by line using getline()
+    // Read the txt file line by line
 
     while (getline(file, line))
     {
         if (line.empty())
             continue;
 
-        // 4. Split line by space to get type and path
+        // Split line by space using the helper function to get type and path
         vector<string> lineParts = splitString(line, ' ');
 
         // Safety check to ensure the line has at least a type and a path to avoid checking grammatical errors
@@ -324,7 +319,7 @@ void FileSystem::loadFile()
         string type = lineParts[0];
         string fullPath = lineParts[1];
 
-        // 5. Split path by "/" to get path segments
+        // Splits path by "/" to get path segments
         vector<string> pathSegments = splitString(fullPath, '/');
 
         if (pathSegments.empty())
@@ -353,7 +348,7 @@ void FileSystem::loadFile()
                 parentFolder->addSubFolder(newFolder);
             }
         }
-        // 7. If type == "FILE":
+        // If the type == "FILE":
         else if (type == "FILE")
         {
             // get parent segments (all except last)
@@ -363,7 +358,7 @@ void FileSystem::loadFile()
                 parentPath.push_back(pathSegments[i]);
             }
 
-            // get last segment (e.g. "assignment.docx")
+            // get last segment like "assignment.docx"
             string fileString = pathSegments.back();
 
             // split last segment by "." to get name and extension
