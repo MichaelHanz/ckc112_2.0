@@ -6,6 +6,14 @@ using namespace std;
 Folder::Folder(string name, Folder *parent)
     : name(name), parent(parent) {}
 
+Folder::~Folder()
+{
+    for (Folder *sub : subfolders)
+    {
+        delete sub;
+    }
+}
+
 vector<File> Folder::getFiles() const
 {
     return files;
@@ -26,114 +34,147 @@ vector<Folder *> Folder::getSubFolders() const
     return subfolders;
 }
 
-
-Folder* Folder::searchFile(int fileIndex, int folderIndex, string targetFile){
+void Folder::addFile(const File &file)
+{
     
-    if(fileIndex < files.size()){
-
-        if(files[fileIndex].getFullName() == targetFile){
-            return this;
-        }
-
-        return searchFile(fileIndex + 1, folderIndex, targetFile);
-    }
-   
-    if(folderIndex < subfolders.size()){
-
-        Folder* result = subfolders[folderIndex] -> searchFile(0, 0, targetFile);
-
-        if(result != nullptr){
-            return result;
-        }
-
-        return searchFile(fileIndex, folderIndex + 1, targetFile);
+    if (file.getName().empty() || file.getExtension().empty())
+    {
+        throw EmptyNameException(); 
     }
 
-    return nullptr;
+    
+    for (const File &existingFile : files)
+    {
+        if (existingFile.getName() == file.getName() && existingFile.getExtension() == file.getExtension())
+        {
+            throw DuplicateItemException(file.getFullName()); 
+        }
+    }
+
+    files.push_back(file);
+    cout << "File '" << file.getFullName() << "' created successfully.\n";
 }
 
-Folder* Folder::deleteFile(int fileIndex, int folderIndex, string removeFile){
+void Folder::addSubFolder(Folder *folder)
+{
+    if (folder == nullptr) return;
+
     
-    if(fileIndex < files.size()){
+    if (folder->getFolderName().empty())
+    {
+        delete folder; // Manual memory cleanup before control structure termination
+        throw EmptyNameException();
+    }
 
-        if(files[fileIndex].getFullName() == removeFile){
+  
+    for (Folder *sub : subfolders)
+    {
+        if (sub->getFolderName() == folder->getFolderName())
+        {
+            delete folder; // Structural memory safety step
+            throw DuplicateItemException(folder->getFolderName());
+        }
+    }
+
+    folder->parent = this;
+    subfolders.push_back(folder);
+    cout << "Folder '" << folder->getFolderName() << "' created successfully.\n";
+}
+
+Folder *Folder::deleteFile(int fileIndex, int folderIndex, const string &removeFile)
+{
+    if (fileIndex < files.size())
+    {
+        if (files[fileIndex].getFullName() == removeFile)
+        {
             files.erase(files.begin() + fileIndex);
-
             return this;
         }
-
         return deleteFile(fileIndex + 1, folderIndex, removeFile);
     }
-   
-    if(folderIndex < subfolders.size()){
-        
-        Folder* result = subfolders[folderIndex] -> deleteFile(0, 0, removeFile);
 
-        if(result != nullptr){
+    if (folderIndex < subfolders.size())
+    {
+        Folder *result = subfolders[folderIndex]->deleteFile(0, 0, removeFile);
+        if (result != nullptr)
+        {
             return result;
         }
-
         return deleteFile(fileIndex, folderIndex + 1, removeFile);
     }
 
+    
+    if (parent == nullptr)
+    {
+        throw ItemNotFoundException(removeFile);
+    }
     return nullptr;
 }
 
-Folder* Folder::deleteFolder(int folderIndex, string removeFolder){
-
-    if(folderIndex < subfolders.size()){
-
-        if(subfolders[folderIndex] -> getFolderName() == removeFolder){
-            
-            Folder* folderToDelete = subfolders[folderIndex];
+Folder *Folder::deleteFolder(int folderIndex, const string &removeFolder)
+{
+    if (folderIndex < subfolders.size())
+    {
+        if (subfolders[folderIndex]->getFolderName() == removeFolder)
+        {
+            Folder *folderToDelete = subfolders[folderIndex];
             subfolders.erase(subfolders.begin() + folderIndex);
-
-            delete folderToDelete;
-
+            delete folderToDelete; // Triggers cascading destructor cleanup loop
             return this;
         }
-
-        return deleteFolder(folderIndex + 1, removeFolder); 
+        return deleteFolder(folderIndex + 1, removeFolder);
     }
 
+    
+    throw ItemNotFoundException(removeFolder);
+}
+
+Folder *Folder::searchFile(int fileIndex, int folderIndex, const string &targetFile)
+{
+    if (fileIndex < files.size())
+    {
+        if (files[fileIndex].getFullName() == targetFile)
+        {
+            return this;
+        }
+        return searchFile(fileIndex + 1, folderIndex, targetFile);
+    }
+
+    if (folderIndex < subfolders.size())
+    {
+        Folder *result = subfolders[folderIndex]->searchFile(0, 0, targetFile);
+        if (result != nullptr)
+        {
+            return result;
+        }
+        return searchFile(fileIndex, folderIndex + 1, targetFile);
+    }
     return nullptr;
 }
 
-void Folder::displayTree(string prefix, bool isLast, int folderIndex, int fileIndex) const {
-    
-    if(folderIndex == 0 && fileIndex == 0){
-        if(prefix.empty()){
-            cout << name << endl;
-        }
-        else{
-            cout << prefix << (isLast ? " |__ " : " |-- ") << name << endl;
-        }
+void Folder::displayTree(const string &prefix) const
+{
+    // 1. Print all Files first
+    for (size_t i = 0; i < files.size(); i++)
+    {
+        // Check if this is the very last item in the entire folder
+        bool isLastItem = (i == files.size() - 1) && subfolders.empty();
+
+        cout << prefix << (isLastItem ? "|__ " : "|-- ") << files[i].getFullName() << "\n";
     }
 
-    string nextPrefix = prefix;
-    if(!prefix.empty()){
-        nextPrefix += (isLast ? "    " : " |   ");
-    }
+    // 2. Print all Subfolders (and trigger RECURSION)
+    for (size_t i = 0; i < subfolders.size(); i++)
+    {
+        // Check if this is the last subfolder
+        bool isLastItem = (i == subfolders.size() - 1);
 
-    if(folderIndex < subfolders.size()){
+        cout << prefix << (isLastItem ? "|__ " : "|-- ") << subfolders[i]->getFolderName() << "\n";
 
-        bool isLastChild = (folderIndex == subfolders.size() - 1);
-
-        subfolders[folderIndex] -> displayTree(nextPrefix, isLastChild, 0, 0);
-
-        displayTree(prefix, isLast, folderIndex + 1, fileIndex);
-
-        return;
-    }
-
-    if(fileIndex < files.size()){
-
-        bool isLastFile = (fileIndex == files.size() - 1);
-
-        cout << nextPrefix << (isLastFile ? " |-- " : " |__ ") << files[fileIndex].getFullName() << endl;
-
-        displayTree(prefix, isLast, folderIndex , fileIndex + 1);
-        
-        return;
+        // 3. THE RECURSIVE CALL
+        // If it's the last item, we add blank spaces to the prefix.
+        // If it's not, we add a vertical bar '|' to keep the line going down.
+        string nextPrefix = prefix + (isLastItem ? "    " : "|   ");
+        subfolders[i]->displayTree(nextPrefix);
     }
 }
